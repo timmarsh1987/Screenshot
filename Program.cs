@@ -13,9 +13,14 @@ using System.Runtime.InteropServices;
 
 namespace Uel.Screenshot.Tests
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void GenerateScreenshot()
+        {
+            // Generate Screenshot code goes here
+        }
+
+        public static void CompareScreenshot()
         {
             var sb = new StringBuilder();
             sb.AppendLine("Screenshot comparison tool");
@@ -27,11 +32,16 @@ namespace Uel.Screenshot.Tests
 
             //BrokenLinkCheck(sb);
             // Compare top level
-            CompareFiles(sourceDirectory, outputDirectory, sb);                
+            CompareFiles(sourceDirectory, outputDirectory, sb);
             // Compare childred
             CompareDirectories(sourceDirectory, outputDirectory, sb);
 
             File.WriteAllText(outputDirectory + "\\Comparison Results.txt", sb.ToString());
+        }
+
+        static void Main(string[] args)
+        {
+            CompareScreenshot();
         }
 
         private static void BrokenLinkCheck(StringBuilder sb)
