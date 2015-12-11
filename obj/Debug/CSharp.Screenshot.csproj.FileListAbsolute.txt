@@ -4,3 +4,4 @@ C:\Projects\CSharp.Screenshot\bin\Debug\CSharp.ScreenshotComparison.pdb
 C:\Projects\CSharp.Screenshot\obj\Debug\CSharp.Screenshot.csprojResolveAssemblyReference.cache
 C:\Projects\CSharp.Screenshot\obj\Debug\CSharp.ScreenshotComparison.exe
 C:\Projects\CSharp.Screenshot\obj\Debug\CSharp.ScreenshotComparison.pdb
+C:\Projects\CSharp.Screenshot\bin\Debug\CSharp.Screenshot.exe.config

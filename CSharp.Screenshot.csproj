@@ -7,8 +7,8 @@
     <ProjectGuid>{33F708F5-0B37-494B-B611-09C45495DDB4}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CSharp.ScreenshotComparison</RootNamespace>
-    <AssemblyName>CSharp.ScreenshotComparison</AssemblyName>
+    <RootNamespace>CSharp.Screenshot</RootNamespace>
+    <AssemblyName>CSharp.Screenshot</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
