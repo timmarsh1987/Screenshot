@@ -8,7 +8,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace CSharp.Screenshot
+namespace TimMarsh.Screenshot
 {
     public class Screenshot
     {   

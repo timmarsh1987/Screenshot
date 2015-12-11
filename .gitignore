@@ -35,3 +35,8 @@ bin/Debug/CSharp.Screenshot.exe.config
 bin/Debug/CSharp.Screenshot.vshost.exe
 bin/Debug/CSharp.Screenshot.vshost.exe.config
 bin/Debug/CSharp.Screenshot.vshost.exe.manifest
+.vs/TimMarsh.Screenshot/v14/.suo
+bin/Debug/TimMarsh.Screenshot.exe.config
+bin/Debug/TimMarsh.Screenshot.vshost.exe
+bin/Debug/TimMarsh.Screenshot.vshost.exe.config
+obj/Debug/TimMarsh.Screenshot.csproj.FileListAbsolute.txt
