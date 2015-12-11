@@ -1,23 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Text;
 
-namespace Uel.Screenshot.Tests
+namespace CSharp.Screenshot
 {
-    public class Program
-    {
-        public static void GenerateScreenshot()
+    public class Screenshot
+    {   
+        public static void TakeScreenshot()
         {
-            // Generate Screenshot code goes here
+            // Take Screenshot code goes here
         }
 
         public static void CompareScreenshot()
@@ -39,50 +36,6 @@ namespace Uel.Screenshot.Tests
             File.WriteAllText(outputDirectory + "\\Comparison Results.txt", sb.ToString());
         }
 
-        static void Main(string[] args)
-        {
-            CompareScreenshot();
-        }
-
-        private static void BrokenLinkCheck(StringBuilder sb)
-        {
-            var result = new WebClient().DownloadString("http://main-vnext.uel.ac.uk/pagelist").Split(new string[] { "\r\n" }, StringSplitOptions.None).ToList();
-            result.RemoveAll(x => x.Equals("\r\n"));
-
-            foreach (var link in result)
-            {
-                HttpWebResponse response = null;
-                try
-                {
-                    //Creating the HttpWebRequest
-                    HttpWebRequest request =
-                        WebRequest.Create("http://main-vnext.uel.ac.uk/pagelist" + link.Replace("\r\n", "")) as HttpWebRequest;
-                    //Setting the Request method HEAD, you can also use GET too.
-                    request.Method = "HEAD";
-                    request.Timeout = 5000;
-                    //Getting the Web Response.
-                    response = request.GetResponse() as HttpWebResponse;
-                    //Returns TRUE if the Status code == 200
-                    sb.AppendLine(link.Replace("\r\n", "") + " OK " + response.StatusCode);
-                    Console.WriteLine(link.Replace("\r\n", "") + " OK " + response.StatusCode);
-                }
-                catch (Exception ex)
-                {
-                    //Any exception will returns false.
-                    sb.AppendLine("----------------------------");
-                    sb.AppendLine(link.Replace("\r\n", "") + " FAIL ");
-                    Console.WriteLine(link.Replace("\r\n", "") + " FAIL " + ex.Message);
-                    sb.AppendLine("----------------------------");
-
-                }
-                finally
-                {
-                    if (response != null)
-                        response.Close();
-                }
-            }
-        }
-
         private static void CompareDirectories(DirectoryInfo sourceDirectory, string outputDirectory, StringBuilder sb)
         {
             var directories = sourceDirectory.GetDirectories();
@@ -93,7 +46,7 @@ namespace Uel.Screenshot.Tests
             }
         }
 
-        private static void CompareFiles(DirectoryInfo directory, string outputDirectory,  StringBuilder sb)
+        private static void CompareFiles(DirectoryInfo directory, string outputDirectory, StringBuilder sb)
         {
             var files = GetFiles(directory);
 
@@ -149,8 +102,8 @@ namespace Uel.Screenshot.Tests
                 lockBitmap1.UnlockBits();
                 lockBitmap2.UnlockBits();
 
-                int TotalPixels = oldFile.Width*oldFile.Height;
-                float difference = (float) ((float) DiferentPixels/(float) TotalPixels);
+                int TotalPixels = oldFile.Width * oldFile.Height;
+                float difference = (float)((float)DiferentPixels / (float)TotalPixels);
 
                 Bitmap containerCombine = new Bitmap(oldFile.Width, oldFile.Height);
 
@@ -161,7 +114,7 @@ namespace Uel.Screenshot.Tests
                     graphics.DrawImage(oldFile, new Point(0, 0));
                     graphics.DrawImage(container, new Point(0, 0));
 
-                    graphics.DrawString((difference*100).ToString("0.00") + "% difference", new Font("Tahoma", 40),
+                    graphics.DrawString((difference * 100).ToString("0.00") + "% difference", new Font("Tahoma", 40),
                         Brushes.Black, rectf);
                 }
 
@@ -179,9 +132,9 @@ namespace Uel.Screenshot.Tests
                 containerCombine.Save(fileName, ImageFormat.Jpeg);
                 containerCombine.Dispose();
 
-                sb.AppendLine((difference*100).ToString("0.00") + "% difference between files");
+                sb.AppendLine((difference * 100).ToString("0.00") + "% difference between files");
 
-                return difference*100;
+                return difference * 100;
             }
             return 0;
         }
@@ -203,7 +156,7 @@ namespace Uel.Screenshot.Tests
             return originalImage.GetThumbnailImage(newSize, newHeight, null, IntPtr.Zero);
         }
 
-        static Color SetTransparency(int A, Color color)
+        private static Color SetTransparency(int A, Color color)
         {
             return Color.FromArgb(A, color.R, color.G, color.B);
         }
@@ -252,7 +205,7 @@ namespace Uel.Screenshot.Tests
 
                     // Lock bitmap and return bitmap data
                     bitmapData = source.LockBits(rect, ImageLockMode.ReadWrite,
-                                                 source.PixelFormat);
+                        source.PixelFormat);
 
                     // create byte array to copy pixel values
                     int step = Depth / 8;
@@ -325,7 +278,7 @@ namespace Uel.Screenshot.Tests
                     clr = Color.FromArgb(r, g, b);
                 }
                 if (Depth == 8)
-                // For 8 bpp get color value (Red, Green and Blue values are the same)
+                    // For 8 bpp get color value (Red, Green and Blue values are the same)
                 {
                     byte c = Pixels[i];
                     clr = Color.FromArgb(c, c, c);
@@ -361,9 +314,58 @@ namespace Uel.Screenshot.Tests
                     Pixels[i + 2] = color.R;
                 }
                 if (Depth == 8)
-                // For 8 bpp set color value (Red, Green and Blue values are the same)
+                    // For 8 bpp set color value (Red, Green and Blue values are the same)
                 {
                     Pixels[i] = color.B;
+                }
+            }
+        }
+    }
+
+    public class Program
+    {
+        
+
+        static void Main(string[] args)
+        {
+            Screenshot.CompareScreenshot();
+        }
+
+        private static void BrokenLinkCheck(StringBuilder sb)
+        {
+            var result = new WebClient().DownloadString("http://main-vnext.uel.ac.uk/pagelist").Split(new string[] { "\r\n" }, StringSplitOptions.None).ToList();
+            result.RemoveAll(x => x.Equals("\r\n"));
+
+            foreach (var link in result)
+            {
+                HttpWebResponse response = null;
+                try
+                {
+                    //Creating the HttpWebRequest
+                    HttpWebRequest request =
+                        WebRequest.Create("http://main-vnext.uel.ac.uk/pagelist" + link.Replace("\r\n", "")) as HttpWebRequest;
+                    //Setting the Request method HEAD, you can also use GET too.
+                    request.Method = "HEAD";
+                    request.Timeout = 5000;
+                    //Getting the Web Response.
+                    response = request.GetResponse() as HttpWebResponse;
+                    //Returns TRUE if the Status code == 200
+                    sb.AppendLine(link.Replace("\r\n", "") + " OK " + response.StatusCode);
+                    Console.WriteLine(link.Replace("\r\n", "") + " OK " + response.StatusCode);
+                }
+                catch (Exception ex)
+                {
+                    //Any exception will returns false.
+                    sb.AppendLine("----------------------------");
+                    sb.AppendLine(link.Replace("\r\n", "") + " FAIL ");
+                    Console.WriteLine(link.Replace("\r\n", "") + " FAIL " + ex.Message);
+                    sb.AppendLine("----------------------------");
+
+                }
+                finally
+                {
+                    if (response != null)
+                        response.Close();
                 }
             }
         }
