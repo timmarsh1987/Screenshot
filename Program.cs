@@ -1,5 +1,7 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -27,7 +29,7 @@ namespace TimMarsh.Screenshot
                 {
                     return ConfigurationManager.AppSettings["ScreenshotPath"];
                 }
-                return AppDomain.CurrentDomain.BaseDirectory + "Screenshots\\";
+                return AppDomain.CurrentDomain.BaseDirectory + "Screenshots";
             }
         }
 
@@ -39,7 +41,7 @@ namespace TimMarsh.Screenshot
                 {
                     return ConfigurationManager.AppSettings["BaseUrl"];
                 }
-                return "http://main-vnext.uel.ac.uk";
+                return "";
             }
         }
 
@@ -47,7 +49,7 @@ namespace TimMarsh.Screenshot
         {
             get
             {
-                return ScreenshotPath + FileName;
+                return ScreenshotPath + "\\" + FileName;
             }
         }
 
@@ -59,9 +61,8 @@ namespace TimMarsh.Screenshot
                 if (String.IsNullOrEmpty(_fileName))
                 {
                     string file = Driver.Url
-                        .Replace(BaseUrl, "")
-                        .Replace(@"http://www.uel.ac.uk", "")
-                        .Replace(@".ac.uk", "")
+                        .Replace(@"http://", "")
+                        .Replace(@".", "")
                         .Replace("/", @"\");
 
                     _fileName = file.Substring(0, file.IndexOf("?") > 0 ? file.IndexOf("?") : file.Length);
@@ -90,17 +91,11 @@ namespace TimMarsh.Screenshot
 
         private static void NavigateToWebPage(string url)
         {
-            if (!ScenarioContext.Current.ContainsKey("BaseUrl"))
-            {
-                //BaseUrl = url;
-                //ScenarioContext.Current.Add("BaseUrl", BaseUrl);
-            }
-            ////----Server----////
-            DesiredCapabilities capability = DesiredCapabilities.Chrome();
-            Driver = new RemoteWebDriver(new Uri("http://dl-sc-bad:5558/wd/hub/"), capability);
-
+            Driver = new ChromeDriver(AppDomain.CurrentDomain.BaseDirectory + "Drivers\\");
             Driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(30));
             Driver.Manage().Timeouts().SetPageLoadTimeout(TimeSpan.FromSeconds(30));
+            Driver.Navigate().GoToUrl(url);
+
             Driver.Manage().Window.Maximize();
         }
 
@@ -110,7 +105,7 @@ namespace TimMarsh.Screenshot
             Bitmap stitchedImage = null;
             try
             {
-                long totalwidth1 = (long)((IJavaScriptExecutor)Driver).ExecuteScript("return document.body.offsetWidth");//documentElement.scrollWidth");
+                long totalwidth1 = (long)((IJavaScriptExecutor)Driver).ExecuteScript("return document.body.offsetWidth");
 
                 long totalHeight1 = (long)((IJavaScriptExecutor)Driver).ExecuteScript("return  document.body.parentNode.scrollHeight");
 
@@ -118,8 +113,8 @@ namespace TimMarsh.Screenshot
                 int totalHeight = (int)totalHeight1;
 
                 // Get the Size of the Viewport
-                long viewportWidth1 = (long)((IJavaScriptExecutor)Driver).ExecuteScript("return document.body.clientWidth");//documentElement.scrollWidth");
-                long viewportHeight1 = (long)((IJavaScriptExecutor)Driver).ExecuteScript("return window.innerHeight");//documentElement.scrollWidth");
+                long viewportWidth1 = (long)((IJavaScriptExecutor)Driver).ExecuteScript("return document.body.clientWidth");
+                long viewportHeight1 = (long)((IJavaScriptExecutor)Driver).ExecuteScript("return window.innerHeight");
 
                 int viewportWidth = (int)viewportWidth1;
                 int viewportHeight = (int)viewportHeight1;
@@ -170,11 +165,14 @@ namespace TimMarsh.Screenshot
                         // ------- UEL Specific Items ---------------
                         if (Driver.Url.ToLower().Contains("uel"))
                         {
-                            //if ((bool)((IJavaScriptExecutor)Driver).ExecuteScript("return document.getElementById('js-uel-top-nav')) != null"));
-                            ((IJavaScriptExecutor)Driver).ExecuteScript("$('#js-uel-top-nav').attr('style', 'display: none')");
-                            ((IJavaScriptExecutor)Driver).ExecuteScript("$('.sc-second_navigation').attr('style', 'visibility: hidden')");
-                            ((IJavaScriptExecutor)Driver).ExecuteScript("$('.sc-cookie-warning').attr('style', 'visibility: hidden')");
-                            ((IJavaScriptExecutor)Driver).ExecuteScript("$('.js-fixed__elements.ci-fixed__elements.fx-desktop-active').attr('style', 'visibility: hidden')");
+                            if ((bool)((IJavaScriptExecutor)Driver).ExecuteScript("return document.getElementById('js-uel-top-nav') != null"))
+                                ((IJavaScriptExecutor)Driver).ExecuteScript("document.getElementById('js-uel-top-nav').style.display = 'none'");
+                            if ((bool)((IJavaScriptExecutor)Driver).ExecuteScript("return document.getElementsByClassName('sc-second_navigation')[0] != null"))
+                                ((IJavaScriptExecutor)Driver).ExecuteScript("document.getElementsByClassName('sc-second_navigation')[0].style.visibility = 'hidden'");
+                            if ((bool)((IJavaScriptExecutor)Driver).ExecuteScript("return document.getElementsByClassName('sc-cookie-warning')[0] != null"))
+                                ((IJavaScriptExecutor)Driver).ExecuteScript("document.getElementsByClassName('sc-cookie-warning')[0].style.visibility = 'hidden'");
+                            if ((bool)((IJavaScriptExecutor)Driver).ExecuteScript("return document.getElementsByClassName('js-fixed__elements.ci-fixed__elements.fx-desktop-active')[0] != null"))
+                                ((IJavaScriptExecutor)Driver).ExecuteScript("document.getElementsByClassName('js-fixed__elements.ci-fixed__elements.fx-desktop-active')[0].style.visibility = 'hidden'");
                         }
                         Thread.Sleep(200);
                     }
@@ -206,6 +204,11 @@ namespace TimMarsh.Screenshot
             {
                 // handle
             }
+            finally
+            {
+                Driver.Close();
+                Driver.Quit();
+            }
             return ResizeImage(stitchedImage, new Size(stitchedImage.Width / 2, stitchedImage.Height / 2));
         }
 
@@ -221,15 +224,19 @@ namespace TimMarsh.Screenshot
             sb.AppendLine("Tim Marsh - UEL Web Team");
             sb.AppendLine("------------------------------");
 
+            bool exists = Directory.Exists(ScreenshotPath);
 
-            var sourceDirectory = new DirectoryInfo(@"\\DL-SCT-TST\Screenshots");
-            var outputDirectory = new DirectoryInfo(@"\\DL-SCT-TST\Screenshots\Output\" + DateTime.Now.ToString(@"ddMMyyHHmmss")).FullName;
+            if (!exists)
+                Directory.CreateDirectory(Path.Combine(ScreenshotPath));
+
+            var path = ScreenshotPath + "\\Output\\" + DateTime.Now.ToString(@"ddMMyyHHmmss");
+            var outputDirectory = new DirectoryInfo(path).FullName;
 
             //BrokenLinkCheck(sb);
             // Compare top level
-            CompareFiles(sourceDirectory, outputDirectory, sb);
+            CompareFiles(new DirectoryInfo(ScreenshotPath), outputDirectory, sb);
             // Compare childred
-            CompareDirectories(sourceDirectory, outputDirectory, sb);
+            CompareDirectories(new DirectoryInfo(ScreenshotPath), outputDirectory, sb);
 
             File.WriteAllText(outputDirectory + "\\Comparison Results.txt", sb.ToString());
         }
@@ -264,12 +271,11 @@ namespace TimMarsh.Screenshot
 
         private static float CompareBitmaps(List<FileInfo> files, StringBuilder sb, string outputDirectory)
         {
-            if (!files.FirstOrDefault().DirectoryName.StartsWith(@"\\DL-SCT-TST\Screenshots\Output"))
+            if (!files.FirstOrDefault().DirectoryName.StartsWith(ScreenshotPath + "\\Output"))
             {
                 sb.AppendLine("Comparing files at: " + files.First().DirectoryName);
 
-                string ssPath = @"\\DL-SCT-TST\Screenshots";
-                outputDirectory = outputDirectory + files.First().DirectoryName.Replace(ssPath, "");
+                outputDirectory = outputDirectory + files.First().DirectoryName.Replace(ScreenshotPath, "");
 
                 Bitmap newFile = new Bitmap(files.First().FullName);
                 Bitmap oldFile = new Bitmap(files.Last().FullName);
@@ -527,6 +533,7 @@ namespace TimMarsh.Screenshot
         static void Main(string[] args)
         {
             Screenshot.TakeScreenshot("http://www.uel.ac.uk");
+            Screenshot.CompareScreenshot();
         }
 
         private static void BrokenLinkCheck(StringBuilder sb)
