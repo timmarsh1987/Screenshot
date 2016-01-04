@@ -19,70 +19,18 @@ namespace TimMarsh.Screenshot
 {
     public class Screenshot
     {
-        protected static IWebDriver Driver;
-
-        private static string ScreenshotPath
-        {
-            get
-            {
-                if (!String.IsNullOrEmpty(ConfigurationManager.AppSettings["ScreenshotPath"]))
-                {
-                    return ConfigurationManager.AppSettings["ScreenshotPath"];
-                }
-                return AppDomain.CurrentDomain.BaseDirectory + "Screenshots";
-            }
-        }
-
-        private static string BaseUrl
-        {
-            get
-            {
-                if (!String.IsNullOrEmpty(ConfigurationManager.AppSettings["BaseUrl"]))
-                {
-                    return ConfigurationManager.AppSettings["BaseUrl"];
-                }
-                return "";
-            }
-        }
-
-        public static string FilePath
-        {
-            get
-            {
-                return ScreenshotPath + "\\" + FileName;
-            }
-        }
-
-        private static string _fileName;
-        private static string FileName
-        {
-            get
-            {
-                if (String.IsNullOrEmpty(_fileName))
-                {
-                    string file = Driver.Url
-                        .Replace(@"http://", "")
-                        .Replace(@".", "")
-                        .Replace("/", @"\");
-
-                    _fileName = file.Substring(0, file.IndexOf("?") > 0 ? file.IndexOf("?") : file.Length);
-                }
-                return _fileName;
-            }
-        }
-
         public static void TakeScreenshot(string url)
         {
             // Open the browser and navigate to the item
             NavigateToWebPage(url);
 
             // Take Screenshot code goes here
-            bool exists = Directory.Exists(FilePath);
+            bool exists = Directory.Exists(Global.FilePath);
 
             if (!exists)
-                Directory.CreateDirectory(Path.Combine(FilePath));
+                Directory.CreateDirectory(Path.Combine(Global.FilePath));
 
-            string fileName = Path.Combine(FilePath, DateTime.Now.ToString(@"MMM-ddd-d-HH.mm.ss") + ".png");
+            string fileName = Path.Combine(Global.FilePath, DateTime.Now.ToString(@"MMM-ddd-d-HH.mm.ss") + ".png");
                         
             Bitmap image = GetEntireScreenshot();
             image.Save(fileName, ImageFormat.Png);
@@ -91,12 +39,12 @@ namespace TimMarsh.Screenshot
 
         private static void NavigateToWebPage(string url)
         {
-            Driver = new ChromeDriver(AppDomain.CurrentDomain.BaseDirectory + "Drivers\\");
-            Driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(30));
-            Driver.Manage().Timeouts().SetPageLoadTimeout(TimeSpan.FromSeconds(30));
-            Driver.Navigate().GoToUrl(url);
+            Global.Driver = new ChromeDriver(AppDomain.CurrentDomain.BaseDirectory + "Global.Drivers\\");
+            Global.Driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(30));
+            Global.Driver.Manage().Timeouts().SetPageLoadTimeout(TimeSpan.FromSeconds(30));
+            Global.Driver.Navigate().GoToUrl(url);
 
-            Driver.Manage().Window.Maximize();
+            Global.Driver.Manage().Window.Maximize();
         }
 
         public static Bitmap GetEntireScreenshot()
@@ -105,16 +53,16 @@ namespace TimMarsh.Screenshot
             Bitmap stitchedImage = null;
             try
             {
-                long totalwidth1 = (long)((IJavaScriptExecutor)Driver).ExecuteScript("return document.body.offsetWidth");
+                long totalwidth1 = (long)((IJavaScriptExecutor)Global.Driver).ExecuteScript("return document.body.offsetWidth");
 
-                long totalHeight1 = (long)((IJavaScriptExecutor)Driver).ExecuteScript("return  document.body.parentNode.scrollHeight");
+                long totalHeight1 = (long)((IJavaScriptExecutor)Global.Driver).ExecuteScript("return  document.body.parentNode.scrollHeight");
 
                 int totalWidth = (int)totalwidth1;
                 int totalHeight = (int)totalHeight1;
 
                 // Get the Size of the Viewport
-                long viewportWidth1 = (long)((IJavaScriptExecutor)Driver).ExecuteScript("return document.body.clientWidth");
-                long viewportHeight1 = (long)((IJavaScriptExecutor)Driver).ExecuteScript("return window.innerHeight");
+                long viewportWidth1 = (long)((IJavaScriptExecutor)Global.Driver).ExecuteScript("return document.body.clientWidth");
+                long viewportHeight1 = (long)((IJavaScriptExecutor)Global.Driver).ExecuteScript("return window.innerHeight");
 
                 int viewportWidth = (int)viewportWidth1;
                 int viewportHeight = (int)viewportHeight1;
@@ -160,25 +108,25 @@ namespace TimMarsh.Screenshot
                         int xDiff = rectangle.Right - previous.Right;
                         int yDiff = rectangle.Bottom - previous.Bottom;
                         // Scroll
-                        ((IJavaScriptExecutor)Driver).ExecuteScript(String.Format("window.scrollBy({0}, {1})", xDiff, yDiff));
+                        ((IJavaScriptExecutor)Global.Driver).ExecuteScript(String.Format("window.scrollBy({0}, {1})", xDiff, yDiff));
 
                         // ------- UEL Specific Items ---------------
-                        if (Driver.Url.ToLower().Contains("uel"))
+                        if (Global.Driver.Url.ToLower().Contains("uel"))
                         {
-                            if ((bool)((IJavaScriptExecutor)Driver).ExecuteScript("return document.getElementById('js-uel-top-nav') != null"))
-                                ((IJavaScriptExecutor)Driver).ExecuteScript("document.getElementById('js-uel-top-nav').style.display = 'none'");
-                            if ((bool)((IJavaScriptExecutor)Driver).ExecuteScript("return document.getElementsByClassName('sc-second_navigation')[0] != null"))
-                                ((IJavaScriptExecutor)Driver).ExecuteScript("document.getElementsByClassName('sc-second_navigation')[0].style.visibility = 'hidden'");
-                            if ((bool)((IJavaScriptExecutor)Driver).ExecuteScript("return document.getElementsByClassName('sc-cookie-warning')[0] != null"))
-                                ((IJavaScriptExecutor)Driver).ExecuteScript("document.getElementsByClassName('sc-cookie-warning')[0].style.visibility = 'hidden'");
-                            if ((bool)((IJavaScriptExecutor)Driver).ExecuteScript("return document.getElementsByClassName('js-fixed__elements.ci-fixed__elements.fx-desktop-active')[0] != null"))
-                                ((IJavaScriptExecutor)Driver).ExecuteScript("document.getElementsByClassName('js-fixed__elements.ci-fixed__elements.fx-desktop-active')[0].style.visibility = 'hidden'");
+                            if ((bool)((IJavaScriptExecutor)Global.Driver).ExecuteScript("return document.getElementById('js-uel-top-nav') != null"))
+                                ((IJavaScriptExecutor)Global.Driver).ExecuteScript("document.getElementById('js-uel-top-nav').style.display = 'none'");
+                            if ((bool)((IJavaScriptExecutor)Global.Driver).ExecuteScript("return document.getElementsByClassName('sc-second_navigation')[0] != null"))
+                                ((IJavaScriptExecutor)Global.Driver).ExecuteScript("document.getElementsByClassName('sc-second_navigation')[0].style.visibility = 'hidden'");
+                            if ((bool)((IJavaScriptExecutor)Global.Driver).ExecuteScript("return document.getElementsByClassName('sc-cookie-warning')[0] != null"))
+                                ((IJavaScriptExecutor)Global.Driver).ExecuteScript("document.getElementsByClassName('sc-cookie-warning')[0].style.visibility = 'hidden'");
+                            if ((bool)((IJavaScriptExecutor)Global.Driver).ExecuteScript("return document.getElementsByClassName('js-fixed__elements.ci-fixed__elements.fx-desktop-active')[0] != null"))
+                                ((IJavaScriptExecutor)Global.Driver).ExecuteScript("document.getElementsByClassName('js-fixed__elements.ci-fixed__elements.fx-desktop-active')[0].style.visibility = 'hidden'");
                         }
                         Thread.Sleep(200);
                     }
 
                     // Take Screenshot
-                    var screenshot = ((ITakesScreenshot)Driver).GetScreenshot();
+                    var screenshot = ((ITakesScreenshot)Global.Driver).GetScreenshot();
 
                     // Build an Image out of the Screenshot
                     Image screenshotImage;
@@ -206,8 +154,8 @@ namespace TimMarsh.Screenshot
             }
             finally
             {
-                Driver.Close();
-                Driver.Quit();
+                Global.Driver.Close();
+                Global.Driver.Quit();
             }
             return ResizeImage(stitchedImage, new Size(stitchedImage.Width / 2, stitchedImage.Height / 2));
         }
@@ -224,19 +172,19 @@ namespace TimMarsh.Screenshot
             sb.AppendLine("Tim Marsh - UEL Web Team");
             sb.AppendLine("------------------------------");
 
-            bool exists = Directory.Exists(ScreenshotPath);
+            bool exists = Directory.Exists(Global.ScreenshotPath);
 
             if (!exists)
-                Directory.CreateDirectory(Path.Combine(ScreenshotPath));
+                Directory.CreateDirectory(Path.Combine(Global.ScreenshotPath));
 
-            var path = ScreenshotPath + "\\Output\\" + DateTime.Now.ToString(@"ddMMyyHHmmss");
+            var path = Global.ScreenshotPath + "\\Output\\" + DateTime.Now.ToString(@"ddMMyyHHmmss");
             var outputDirectory = new DirectoryInfo(path).FullName;
 
             //BrokenLinkCheck(sb);
             // Compare top level
-            CompareFiles(new DirectoryInfo(ScreenshotPath), outputDirectory, sb);
+            CompareFiles(new DirectoryInfo(Global.ScreenshotPath), outputDirectory, sb);
             // Compare childred
-            CompareDirectories(new DirectoryInfo(ScreenshotPath), outputDirectory, sb);
+            CompareDirectories(new DirectoryInfo(Global.ScreenshotPath), outputDirectory, sb);
 
             File.WriteAllText(outputDirectory + "\\Comparison Results.txt", sb.ToString());
         }
@@ -271,11 +219,11 @@ namespace TimMarsh.Screenshot
 
         private static float CompareBitmaps(List<FileInfo> files, StringBuilder sb, string outputDirectory)
         {
-            if (!files.FirstOrDefault().DirectoryName.StartsWith(ScreenshotPath + "\\Output"))
+            if (!files.FirstOrDefault().DirectoryName.StartsWith(Global.ScreenshotPath + "\\Output"))
             {
                 sb.AppendLine("Comparing files at: " + files.First().DirectoryName);
 
-                outputDirectory = outputDirectory + files.First().DirectoryName.Replace(ScreenshotPath, "");
+                outputDirectory = outputDirectory + files.First().DirectoryName.Replace(Global.ScreenshotPath, "");
 
                 Bitmap newFile = new Bitmap(files.First().FullName);
                 Bitmap oldFile = new Bitmap(files.Last().FullName);
