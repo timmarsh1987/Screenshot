@@ -39,7 +39,7 @@ namespace TimMarsh.Screenshot
 
         private static void NavigateToWebPage(string url)
         {
-            Global.Driver = new ChromeDriver(AppDomain.CurrentDomain.BaseDirectory + "Global.Drivers\\");
+            Global.Driver = new ChromeDriver(AppDomain.CurrentDomain.BaseDirectory + "Drivers\\");
             Global.Driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(30));
             Global.Driver.Manage().Timeouts().SetPageLoadTimeout(TimeSpan.FromSeconds(30));
             Global.Driver.Navigate().GoToUrl(url);
@@ -180,6 +180,9 @@ namespace TimMarsh.Screenshot
             var path = Global.ScreenshotPath + "\\Output\\" + DateTime.Now.ToString(@"ddMMyyHHmmss");
             var outputDirectory = new DirectoryInfo(path).FullName;
 
+            if (!Directory.Exists(outputDirectory))
+                Directory.CreateDirectory(Path.Combine(outputDirectory));
+
             //BrokenLinkCheck(sb);
             // Compare top level
             CompareFiles(new DirectoryInfo(Global.ScreenshotPath), outputDirectory, sb);
@@ -279,7 +282,7 @@ namespace TimMarsh.Screenshot
                     Directory.CreateDirectory(outputDirectory);
                 }
 
-                string fileName = Path.Combine(outputDirectory, currTime + ".png");
+                string fileName = Path.Combine(outputDirectory, currTime + ".jpg");
 
                 containerCombine.Save(fileName, ImageFormat.Jpeg);
                 containerCombine.Dispose();
