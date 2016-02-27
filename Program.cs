@@ -206,18 +206,34 @@ namespace TimMarsh.Screenshot
         {
             var files = GetFiles(directory);
 
-            if (files.Count != 2)
+            // Single file so no comparison available
+            if (files.Count < 2)
                 return;
 
-            CompareBitmaps(files, sb, outputDirectory);
+            var fileToDeleteCount = files.Count - 2;
+
+            // Remove all files other than final 2
+            foreach (var file in files)
+            {
+                if (fileToDeleteCount > 0)
+                {
+                    file.Delete();
+                    fileToDeleteCount--;
+                }
+            }
+
+            var filesToCompare = files.OrderByDescending(f => f.LastWriteTime).Take(2).ToList();
+
+            // Compare the files
+            CompareBitmaps(filesToCompare, sb, outputDirectory);
         }
 
         private static List<FileInfo> GetFiles(DirectoryInfo directory)
         {
             return directory.GetFiles()
-                .OrderByDescending(f => f.LastWriteTime)
+                .OrderBy(f => f.LastWriteTime)
                 .Where(x => !x.Name.EndsWith(".db"))
-                .Take(2).ToList();
+                .ToList();
         }
 
         private static float CompareBitmaps(List<FileInfo> files, StringBuilder sb, string outputDirectory)
