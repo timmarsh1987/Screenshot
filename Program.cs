@@ -39,7 +39,7 @@ namespace TimMarsh.Screenshot
 
         private static void NavigateToWebPage(string url)
         {
-            Global.Driver = new ChromeDriver(AppDomain.CurrentDomain.BaseDirectory + "Drivers\\");
+            Global.Driver = new ChromeDriver(AppDomain.CurrentDomain.BaseDirectory + "\\Drivers\\");
             Global.Driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(30));
             Global.Driver.Manage().Timeouts().SetPageLoadTimeout(TimeSpan.FromSeconds(30));
             Global.Driver.Navigate().GoToUrl(url);
